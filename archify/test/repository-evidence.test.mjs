@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { startPreview } from '../bin/preview.mjs';
 import { ChromeVisualBrowser, findChrome } from '../bin/visual-check.mjs';
 import { verifyRepositoryEvidence } from '../renderers/shared/repository-evidence.mjs';
+import { readRepositoryFixtureMetadata } from '../../scripts/repository-fixture.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const skillRoot = path.resolve(here, '..');
@@ -56,6 +57,39 @@ function evidencePayload(html) {
   assert.ok(match, 'verified evidence payload missing');
   return JSON.parse(match[1]);
 }
+
+for (const [name, origin, expectedUrl] of [
+  ['upstream HTTPS', 'https://github.com/tt-a1i/archify.git', 'https://github.com/tt-a1i/archify'],
+  ['fork HTTPS', 'https://github.com/jdylanmc/topo-archify', 'https://github.com/jdylanmc/topo-archify'],
+  ['fork SCP', 'git@github.com:jdylanmc/topo-archify.git', 'https://github.com/jdylanmc/topo-archify'],
+  ['fork SSH', 'ssh://git@github.com/jdylanmc/topo-archify.git', 'https://github.com/jdylanmc/topo-archify'],
+  ['credentialed fork HTTPS', 'https://fixture-user:fixture-password@github.com/jdylanmc/topo-archify.git', 'https://github.com/jdylanmc/topo-archify'],
+]) {
+  test(`checkout evidence fixture follows ${name} without changing origin or relaxing validation`, (t) => {
+    const data = fixture();
+    t.after(() => fs.rmSync(data.root, { recursive: true, force: true }));
+    git(data.root, 'remote', 'set-url', 'origin', origin);
+    data.diagram.meta.repository = readRepositoryFixtureMetadata(data.root);
+    assert.deepEqual(data.diagram.meta.repository, { url: expectedUrl, revision: data.revision });
+    assert.equal(verifyRepositoryEvidence('architecture', data.diagram, data.root).verified, true);
+    assert.equal(git(data.root, 'remote', 'get-url', 'origin'), origin);
+    data.diagram.meta.repository.url = 'https://github.com/example/different-repository';
+    assert.throws(
+      () => verifyRepositoryEvidence('architecture', data.diagram, data.root),
+      (error) => error?.archifyDiagnostics?.some(({ code }) => code === 'repository-evidence/origin-mismatch'),
+    );
+    assert.equal(git(data.root, 'remote', 'get-url', 'origin'), origin);
+  });
+}
+
+test('checkout evidence fixture fails explicitly when origin is missing or unsupported', (t) => {
+  const data = fixture();
+  t.after(() => fs.rmSync(data.root, { recursive: true, force: true }));
+  git(data.root, 'remote', 'remove', 'origin');
+  assert.throws(() => readRepositoryFixtureMetadata(data.root), /origin/);
+  git(data.root, 'remote', 'add', 'origin', 'not-a-remote-url');
+  assert.throws(() => readRepositoryFixtureMetadata(data.root), /standard GitHub origin/);
+});
 
 test('evidence prefetch preserves the first source diagnostic in JSON output', (t) => {
   const data = fixture();

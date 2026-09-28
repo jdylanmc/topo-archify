@@ -1,0 +1,102 @@
+# @jdylanmc/topo-archify
+
+Packaging-first downstream distribution of [Archify](https://github.com/tt-a1i/archify),
+not an upstream-endorsed SDK. Node 22+, no dependencies, install hooks, downloads,
+or model invocation. All 104 runtime files, fonts, templates, schemas and notices
+are pristine upstream v3.0.0. Package version **0.1.0** is independent of upstream
+version **3.0.0**. `release.json` records the commit and official ZIP hash;
+`runtime-integrity.json` records every runtime byte.
+
+```js
+import { cliPath, verifyRuntime } from '@jdylanmc/topo-archify';
+import { execFileSync } from 'node:child_process';
+verifyRuntime(); // throws on changed/missing/extra files or symbolic links
+execFileSync(process.execPath, [cliPath, 'render', 'architecture', 'diagram.json', 'diagram.html']);
+```
+
+The narrow API supplies `runtimeDirectory`, `cliPath`,
+`architectureRendererPath`, `outputCheckerPath` and `verifyRuntime()`.
+These are filesystem entrypoints for native execution, not a broad renderer
+object API. Invoke the native CLI with `--help` for its contract. Keep v3
+`meta.output` resolution inside an owned working directory. Rendering is local;
+do not infer upstream `deliver`/`finalize` certification for adapted outputs.
+
+## Build and regression
+
+From the fork root, with Git, unzip, npm and Node 22+:
+
+```sh
+node integrations/topo-npm/pack.mjs dist
+node --test integrations/topo-npm/package.test.mjs
+```
+
+The builder extracts the selected commit's official ZIP (already produced by
+upstream's clean Skill stager), not the current fork runtime. It verifies the
+committed ZIP hash and every extracted file against the original integration
+inventory. No runtime is rewritten.
+Untracked files and current upstream edits cannot enter the runtime. The test
+installs the tarball in a disposable consumer, checks the public entrypoints,
+all five native families, notices, inventory and tamper rejection.
+
+The package test is **not** the complete upstream development suite. To test
+upstream itself, use a separate checkout of the selected revision, then run
+`cd archify && npm ci && npm test` and the browser/WebM gates declared there.
+Current fork main is not evidence for the selected older revision.
+
+## Updating and publishing
+
+Topocode ships the context-loading `topo-archify-maintenance` skill. Load its
+context before changing this integration. Preview a deliberate pristine upstream
+candidate with `node integrations/topo-npm/update-pin.mjs <full-commit>`.
+After the required approval, repeat with `--write` to update `release.json` and
+`upstream-integrity.json` from that commit's official archive (never working-tree
+runtime bytes). Inspect the metadata diff and choose the downstream package version;
+run this package test and Topocode's full regression plus installed-package
+consumer test. Record upstream release notes, byte provenance and visual results.
+No generated runtime belongs in this Git repository.
+
+Initial v3.0.1 adoption is **not** authorized by this package: it adds automatic
+update-check/reminder behavior to deliver/finalize, requiring deliberate
+local-first compatibility assessment. Do not mistake a patch number for
+unchanged behavior.
+
+Passing packaging patches and behavior-compatible upstream patches are eligible
+for agent releases under the owner's policy. Minor/major upgrades, renderer
+patches and changed contracts or behavior require human approval. No scheduler
+or auto-merge runs here. Publication is **GitHub Actions only**:
+`.github/workflows/publish-npm.yml` builds/tests on GitHub-hosted Ubuntu and
+uploads a candidate. Separate jobs verify the same tarball's SHA-256 and publish
+to public npm. Normal publication uses OIDC (`id-token: write`), Node 24 and
+npm >=11.5.1. No local npm login or publish command is used.
+
+After independent review and npm-side trust setup, run **Publish renderer to
+npm** from GitHub Actions on `main`, with the exact committed package version.
+The `mode` input defaults to `verify`; `oidc` explicitly publishes after gates.
+Configure npm's trusted publisher as GitHub user `jdylanmc`, repository
+`topo-archify`, workflow filename **`publish-npm.yml`**, **Environment name blank**,
+and explicitly allow direct `npm publish` (not only staged publication).
+
+GitHub ownership does not establish npm ownership. First publication is a
+separate authorized owner action. npm's documented trust setup starts from an
+existing package's settings; this does **not** prove tokenless bootstrap of a
+nonexistent package. First-package bootstrap is a separate explicit path using
+the human's UI-managed GitHub secret `NPM_BOOTSTRAP_TOKEN` **only in its publish
+step**. It has no OIDC permission or provenance claim. The parent may push a
+protected, newly created tag
+`npm-bootstrap/v0.1.0-<reviewed-full-40-character-commit>` at that exact commit,
+even before the workflow reaches the default branch. Version/commit mismatches,
+tag updates and existing public packages are rejected before publication.
+No arbitrary branch/PR push publishes, and bootstrap does not skip package gates.
+Revoke the token in npm and delete the GitHub secret after the first versions.
+The bootstrap publishing step runs `npm whoami` first, reporting only the
+authenticated account name. This does not prove package-creation/write grants;
+only the authorized real publish exercises those rights. No token value is logged.
+
+Fork CI retains upstream validation without impersonating upstream: Windows
+evidence fixtures derive the actual checkout's origin and revision, while the
+upstream notifier manifest is checked against canonical `tt-a1i/archify` release
+assets and tags. The selected npm runtime remains pristine 3.0.0.
+See [the coordinated release walkthrough](https://github.com/jdylanmc/topo-code/blob/main/docs/npm-release.md)
+and [npm's current trusted-publisher requirements](https://docs.npmjs.com/trusted-publishers/).
+Retain upstream MIT, third-party, embedded font, brand attribution and trademark
+notices verbatim.
