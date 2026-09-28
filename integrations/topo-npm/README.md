@@ -88,6 +88,14 @@ even before the workflow reaches the default branch. Version/commit mismatches,
 tag updates and existing public packages are rejected before publication.
 No arbitrary branch/PR push publishes, and bootstrap does not skip package gates.
 Revoke the token in npm and delete the GitHub secret after the first versions.
+The bootstrap publishing step runs `npm whoami` first, reporting only the
+authenticated account name. This does not prove package-creation/write grants;
+only the authorized real publish exercises those rights. No token value is logged.
+
+Fork CI retains upstream validation without impersonating upstream: Windows
+evidence fixtures derive the actual checkout's origin and revision, while the
+upstream notifier manifest is checked against canonical `tt-a1i/archify` release
+assets and tags. The selected npm runtime remains pristine 3.0.0.
 See [the coordinated release walkthrough](https://github.com/jdylanmc/topo-code/blob/main/docs/npm-release.md)
 and [npm's current trusted-publisher requirements](https://docs.npmjs.com/trusted-publishers/).
 Retain upstream MIT, third-party, embedded font, brand attribution and trademark

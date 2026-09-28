@@ -20,3 +20,9 @@ versions are independent of the pinned upstream runtime version.
 
 - Keep initial distribution on 3.0.0 despite upstream main's 3.0.1 movement;
   changed update-check behavior requires deliberate compatibility review.
+
+### Fixed
+
+- Pin distribution Actions to verified immutable commits. Preserve genuine
+  fork repository evidence in Windows fixtures and validate upstream notifier
+  assets against their actual upstream release, without altering renderer bytes.

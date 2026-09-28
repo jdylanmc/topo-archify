@@ -182,6 +182,13 @@ test('an exact tag fetch restores an annotated object after a SHA-only checkout'
 test('CI binds a public notifier manifest to the Release asset, tagged archive, and tag tree build', () => {
   const workflow = fs.readFileSync(path.join(repoRoot, '.github', 'workflows', 'ci.yml'), 'utf8');
   const job = workflowJob(workflow, 'published-update-manifest');
+  assert.match(job, /UPSTREAM_REPOSITORY: tt-a1i\/archify/);
+  for (const endpoint of ['latest', 'tags/v${manifest_version}', 'assets/${release_asset_id}']) {
+    assert.ok(job.includes(`repos/\${UPSTREAM_REPOSITORY}/releases/${endpoint}`));
+  }
+  assert.doesNotMatch(job, /repos\/\$\{GITHUB_REPOSITORY\}\/releases/);
+  assert.match(job, /git fetch --force --no-tags --depth=1 "https:\/\/github\.com\/\$\{UPSTREAM_REPOSITORY\}\.git"/);
+  assert.doesNotMatch(job, /git remote (?:add|set-url)/);
   assert.match(job, /validateStableUpdateManifest/);
   assert.match(job, /releases\/latest/);
   assert.match(job, /latest_stable_tag" != "v\$\{manifest_version\}"/);
@@ -202,6 +209,21 @@ test('CI binds a public notifier manifest to the Release asset, tagged archive, 
   assert.match(job, /cmp -s "\$rebuilt_archive" "\$tagged_archive"/);
   assert.match(job, /manifest_version" == "2\.15\.0"/);
   assert.match(job, /missing the deterministic archive builder/);
+});
+
+test('downstream bootstrap checks authentication only inside its secret-scoped publishing step', () => {
+  const workflow = fs.readFileSync(path.join(repoRoot, '.github', 'workflows', 'publish-npm.yml'), 'utf8');
+  const bootstrap = workflowJob(workflow, 'publish-bootstrap');
+  const publish = workflowStep(bootstrap, 'Bootstrap the first version using the UI-managed one-time secret');
+  assert.equal([...workflow.matchAll(/secrets\.NPM_BOOTSTRAP_TOKEN/g)].length, 1);
+  assert.match(publish, /NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_BOOTSTRAP_TOKEN \}\}/);
+  assert.match(publish, /npm whoami --registry https:\/\/registry\.npmjs\.org/);
+  assert.ok(publish.indexOf('npm whoami') < publish.indexOf('npm publish "dist/$PACKAGE_FILE"'));
+  assert.match(publish, /Authenticated npm identity only; package creation rights are checked by the real publish/);
+  assert.doesNotMatch(publish, /echo[^\n]*\$NODE_AUTH_TOKEN|\bprintenv\b/);
+  for (const job of ['verify', 'publish-oidc', 'verify-publication']) {
+    assert.doesNotMatch(workflowJob(workflow, job), /NPM_BOOTSTRAP_TOKEN|npm whoami/);
+  }
 });
 
 test('release docs disclose that mutable Release assets are verified only at deployment time', () => {
@@ -1541,6 +1563,9 @@ test('CI tests the declared Node floor plus every maintained current lane', () =
 test('CI and tagged releases share the maintained Windows path contract on Node 22 and 24', () => {
   const runnerPath = path.join(repoRoot, 'scripts', 'run-windows-path-tests.mjs');
   const runner = fs.readFileSync(runnerPath, 'utf8');
+  assert.match(runner, /evidenceDiagram\.meta\.repository = readRepositoryFixtureMetadata\(repoRoot\)/);
+  assert.doesNotMatch(runner, /url: 'https:\/\/github\.com\/tt-a1i\/archify'/);
+  assert.doesNotMatch(runner, /['"]remote['"],\s*['"]set-url['"]/);
   const fullSuites = [
     'test/release-package-gates.test.mjs',
     'test/copy-site-assets.test.mjs',
