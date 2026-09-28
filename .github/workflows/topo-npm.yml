@@ -2,10 +2,10 @@ name: Topocode renderer package
 
 on:
   pull_request:
-    paths: ["integrations/topo-npm/**", ".github/workflows/topo-npm.yml"]
+    paths: ["integrations/topo-npm/**", ".github/workflows/topo-npm.yml", ".github/workflows/publish-npm.yml"]
   push:
     branches: [main]
-    paths: ["integrations/topo-npm/**", ".github/workflows/topo-npm.yml"]
+    paths: ["integrations/topo-npm/**", ".github/workflows/topo-npm.yml", ".github/workflows/publish-npm.yml"]
   workflow_dispatch:
 
 permissions:

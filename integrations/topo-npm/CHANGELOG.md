@@ -7,8 +7,9 @@ versions are independent of the pinned upstream runtime version.
 
 ### Added
 
-- Add a main-only GitHub-hosted release workflow with artifact verification,
-  protected-environment OIDC publishing and explicit npm trust prerequisites.
+- Add GitHub-hosted artifact verification and OIDC publication, plus an explicit
+  first-package bootstrap using version/commit-bound tags and a step-local,
+  UI-managed token. No local npm authentication or GitHub environment is needed.
 - Package pristine upstream Archify 3.0.0 as `@jdylanmc/topo-archify` 0.1.0,
   with explicit provenance, complete runtime resources/notices, narrow filesystem
   entrypoints and integrity verification.

@@ -63,26 +63,31 @@ unchanged behavior.
 Passing packaging patches and behavior-compatible upstream patches are eligible
 for agent releases under the owner's policy. Minor/major upgrades, renderer
 patches and changed contracts or behavior require human approval. No scheduler
-or automatic publication runs here. Publication is **GitHub Actions only**:
-`.github/workflows/npm-release.yml` builds/tests on GitHub-hosted Ubuntu and
-uploads a candidate. Its separate `npm`-environment job verifies the same
-tarball's SHA-256 and publishes with OIDC (`id-token: write`) to the public npm
-registry. It uses Node 24 and requires npm >=11.5.1. No local npm login,
-publish command or token secret is required by this workflow.
+or auto-merge runs here. Publication is **GitHub Actions only**:
+`.github/workflows/publish-npm.yml` builds/tests on GitHub-hosted Ubuntu and
+uploads a candidate. Separate jobs verify the same tarball's SHA-256 and publish
+to public npm. Normal publication uses OIDC (`id-token: write`), Node 24 and
+npm >=11.5.1. No local npm login or publish command is used.
 
 After independent review and npm-side trust setup, run **Publish renderer to
 npm** from GitHub Actions on `main`, with the exact committed package version.
-The `publish` input defaults to false; enabling it requires the configured
-environment approval. Configure npm's trusted publisher as GitHub user
-`jdylanmc`, repository `topo-archify`, workflow filename `npm-release.yml`,
-environment `npm`, and explicitly allow direct `npm publish` (not only staged
-publication). Create/protect the GitHub `npm` environment first.
+The `mode` input defaults to `verify`; `oidc` explicitly publishes after gates.
+Configure npm's trusted publisher as GitHub user `jdylanmc`, repository
+`topo-archify`, workflow filename **`publish-npm.yml`**, **Environment name blank**,
+and explicitly allow direct `npm publish` (not only staged publication).
 
 GitHub ownership does not establish npm ownership. First publication is a
 separate authorized owner action. npm's documented trust setup starts from an
 existing package's settings; this does **not** prove tokenless bootstrap of a
-nonexistent package. Actions-only bootstrap and access to npm settings remain
-owner prerequisites. Do not dispatch publication until resolved.
+nonexistent package. First-package bootstrap is a separate explicit path using
+the human's UI-managed GitHub secret `NPM_BOOTSTRAP_TOKEN` **only in its publish
+step**. It has no OIDC permission or provenance claim. The parent may push a
+protected, newly created tag
+`npm-bootstrap/v0.1.0-<reviewed-full-40-character-commit>` at that exact commit,
+even before the workflow reaches the default branch. Version/commit mismatches,
+tag updates and existing public packages are rejected before publication.
+No arbitrary branch/PR push publishes, and bootstrap does not skip package gates.
+Revoke the token in npm and delete the GitHub secret after the first versions.
 See [the coordinated release walkthrough](https://github.com/jdylanmc/topo-code/blob/main/docs/npm-release.md)
 and [npm's current trusted-publisher requirements](https://docs.npmjs.com/trusted-publishers/).
 Retain upstream MIT, third-party, embedded font, brand attribution and trademark
