@@ -1,0 +1,8 @@
+{
+  "upstreamRepository": "https://github.com/tt-a1i/archify",
+  "upstreamVersion": "3.0.0",
+  "upstreamCommit": "9286c3b9c2cef359e98586b420d769d87bcb163f",
+  "archiveSha256": "e30f65ddab8bbb0c467fa4be5bccf7e3853bd3ee86e8338f31e102037496be18",
+  "runtimeFiles": 104,
+  "patches": []
+}

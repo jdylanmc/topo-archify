@@ -1,0 +1,32 @@
+name: Topocode renderer package
+
+on:
+  pull_request:
+    paths: ["integrations/topo-npm/**", ".github/workflows/topo-npm.yml"]
+  push:
+    branches: [main]
+    paths: ["integrations/topo-npm/**", ".github/workflows/topo-npm.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test integrations/topo-npm/package.test.mjs
+      - run: node integrations/topo-npm/pack.mjs dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: topo-archify-${{ matrix.os }}
+          path: dist/*.tgz

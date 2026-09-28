@@ -1,0 +1,20 @@
+{
+  "name": "@jdylanmc/topo-archify",
+  "version": "0.1.0",
+  "description": "Pristine pinned Archify runtime for Topocode, packaged without install hooks.",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "exports": {
+    ".": { "types": "./index.d.ts", "default": "./index.js" },
+    "./package.json": "./package.json",
+    "./release.json": "./release.json"
+  },
+  "files": ["index.js", "index.d.ts", "release.json", "runtime-integrity.json", "runtime", "LICENSE", "THIRD_PARTY_NOTICES.md", "README.md"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jdylanmc/topo-archify.git",
+    "directory": "integrations/topo-npm"
+  },
+  "publishConfig": { "access": "public" }
+}
