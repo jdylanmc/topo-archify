@@ -63,13 +63,27 @@ unchanged behavior.
 Passing packaging patches and behavior-compatible upstream patches are eligible
 for agent releases under the owner's policy. Minor/major upgrades, renderer
 patches and changed contracts or behavior require human approval. No scheduler
-or automatic publication runs here. After independent review and npm scope/access
-verification, the release owner publishes the **tested tarball**:
+or automatic publication runs here. Publication is **GitHub Actions only**:
+`.github/workflows/npm-release.yml` builds/tests on GitHub-hosted Ubuntu and
+uploads a candidate. Its separate `npm`-environment job verifies the same
+tarball's SHA-256 and publishes with OIDC (`id-token: write`) to the public npm
+registry. It uses Node 24 and requires npm >=11.5.1. No local npm login,
+publish command or token secret is required by this workflow.
 
-```sh
-npm publish dist/jdylanmc-topo-archify-0.1.0.tgz --access public
-```
+After independent review and npm-side trust setup, run **Publish renderer to
+npm** from GitHub Actions on `main`, with the exact committed package version.
+The `publish` input defaults to false; enabling it requires the configured
+environment approval. Configure npm's trusted publisher as GitHub user
+`jdylanmc`, repository `topo-archify`, workflow filename `npm-release.yml`,
+environment `npm`, and explicitly allow direct `npm publish` (not only staged
+publication). Create/protect the GitHub `npm` environment first.
 
 GitHub ownership does not establish npm ownership. First publication is a
-separate authorized owner action. Retain upstream MIT, third-party, embedded font,
-brand attribution and trademark notices verbatim.
+separate authorized owner action. npm's documented trust setup starts from an
+existing package's settings; this does **not** prove tokenless bootstrap of a
+nonexistent package. Actions-only bootstrap and access to npm settings remain
+owner prerequisites. Do not dispatch publication until resolved.
+See [the coordinated release walkthrough](https://github.com/jdylanmc/topo-code/blob/main/docs/npm-release.md)
+and [npm's current trusted-publisher requirements](https://docs.npmjs.com/trusted-publishers/).
+Retain upstream MIT, third-party, embedded font, brand attribution and trademark
+notices verbatim.
