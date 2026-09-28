@@ -14,6 +14,10 @@ test('packed runtime installs cleanly, renders all families offline, and rejects
   const temporary = mkdtempSync(path.join(tmpdir(), 'topo-archify-consumer-'));
   try {
     const packed = JSON.parse(run(['integrations/topo-npm/pack.mjs', temporary], repository));
+    const candidate = JSON.parse(run(['integrations/topo-npm/update-pin.mjs', packed.upstream.revision], repository));
+    assert.equal(candidate.written, false);
+    assert.deepEqual(candidate.release, JSON.parse(readFileSync(path.join(repository, 'integrations/topo-npm/release.json'), 'utf8')));
+    assert.deepEqual(candidate.integrity, JSON.parse(readFileSync(path.join(repository, 'integrations/topo-npm/upstream-integrity.json'), 'utf8')));
     assert.equal(packed.name, '@jdylanmc/topo-archify');
     assert.equal(packed.version, '0.1.0');
     assert.equal(packed.upstream.files, 104);

@@ -46,8 +46,11 @@ Current fork main is not evidence for the selected older revision.
 ## Updating and publishing
 
 Topocode ships the context-loading `topo-archify-maintenance` skill. Load its
-context before changing this integration. Update `release.json` and the reviewed
-`upstream-integrity.json` only from a deliberate pristine upstream candidate;
+context before changing this integration. Preview a deliberate pristine upstream
+candidate with `node integrations/topo-npm/update-pin.mjs <full-commit>`.
+After the required approval, repeat with `--write` to update `release.json` and
+`upstream-integrity.json` from that commit's official archive (never working-tree
+runtime bytes). Inspect the metadata diff and choose the downstream package version;
 run this package test and Topocode's full regression plus installed-package
 consumer test. Record upstream release notes, byte provenance and visual results.
 No generated runtime belongs in this Git repository.
