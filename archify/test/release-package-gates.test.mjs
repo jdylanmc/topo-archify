@@ -218,7 +218,8 @@ test('downstream bootstrap checks authentication only inside its secret-scoped p
   assert.equal([...workflow.matchAll(/secrets\.NPM_BOOTSTRAP_TOKEN/g)].length, 1);
   assert.match(publish, /NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_BOOTSTRAP_TOKEN \}\}/);
   assert.match(publish, /npm whoami --registry https:\/\/registry\.npmjs\.org/);
-  assert.ok(publish.indexOf('npm whoami') < publish.indexOf('npm publish "dist/$PACKAGE_FILE"'));
+  assert.match(publish, /npm publish "\.\/dist\/\$PACKAGE_FILE"/);
+  assert.ok(publish.indexOf('npm whoami') < publish.indexOf('npm publish "./dist/$PACKAGE_FILE"'));
   assert.match(publish, /Authenticated npm identity only; package creation rights are checked by the real publish/);
   assert.doesNotMatch(publish, /echo[^\n]*\$NODE_AUTH_TOKEN|\bprintenv\b/);
   for (const job of ['verify', 'publish-oidc', 'verify-publication']) {

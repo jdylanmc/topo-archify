@@ -23,6 +23,8 @@ versions are independent of the pinned upstream runtime version.
 
 ### Fixed
 
+- Use explicit local tarball arguments in both publish modes, verified by real
+  credential-free npm dry-runs rather than GitHub shorthand resolution.
 - Pin distribution Actions to verified immutable commits. Preserve genuine
   fork repository evidence in Windows fixtures and validate upstream notifier
   assets against their actual upstream release, without altering renderer bytes.
